@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const yaml = require('js-yaml');
 const app = express();
+const express = require('express');
+const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
 // Beispiel Daten für Bücher
@@ -170,7 +172,7 @@ app.post('/lends', (req, res) => {
     }
 });
 
-// DELETE /lends/{id} - Bringt ein Buch zurück
+
 app.delete('/lends/:id', (req, res) => {
     const id = req.params.id;
     const lendIndex = lends.findIndex(lend => lend.id === id);
@@ -184,25 +186,85 @@ app.delete('/lends/:id', (req, res) => {
 
 app.get('/swagger-ui', (req, res) => {
     try {
-        // Pfad zur JSON-Datei
         const jsonFilePath = 'openapi3_0.json';
 
-        // JSON-Datei lesen
         const jsonData = fs.readFileSync(jsonFilePath, 'utf8');
 
-        // JSON-String in ein JavaScript-Objekt parsen
+
         const data = JSON.parse(jsonData);
 
-        // Daten als JSON zurückgeben
+
         res.json(data);
     } catch (error) {
         console.error('Fehler beim Lesen der JSON-Datei:', error);
-        // Fehlermeldung zurückgeben
+
         res.status(500).send('Interner Serverfehler');
     }
 });
 
-// Starte den Server
+
+const app = express();
+app.use(bodyParser.json());
+
+
+const validUser = {
+    email: "desk@library.example",
+    password: "m295"
+};
+
+// Session-Status
+let isAuthenticated = false;
+let authenticatedUser = null;
+
+
+const authenticate = (req, res, next) => {
+    if (isAuthenticated) {
+        next();
+    } else {
+        res.status(401).send("Unauthorized");
+    }
+};
+
+
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    if (email === validUser.email && password === validUser.password) {
+        isAuthenticated = true;
+        authenticatedUser = email;
+        res.status(201).json({ email: authenticatedUser });
+    } else {
+        res.status(401).send("Unauthorized");
+    }
+});
+
+app.delete('/logout', (req, res) => {
+    isAuthenticated = false;
+    authenticatedUser = null;
+    res.status(204).send();
+});
+
+app.get('/verify', (req, res) => {
+    if (isAuthenticated) {
+        res.status(200).json({ email: authenticatedUser });
+    } else {
+        res.status(401).send("Unauthorized");
+    }
+});
+
+app.get('/lends', authenticate, (req, res) => {
+    res.status(200).send("Authenticated user can access this resource");
+});
+
+
+app.get('/test', authenticate, (req, res) => {
+    res.status(200).send("Authenticated user can access this resource");
+});
+
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+});
+
+
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server läuft auf http://localhost:${PORT}`);
