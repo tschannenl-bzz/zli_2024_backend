@@ -3,7 +3,8 @@ const {response} = require("express");
 const {readFile} = require("fs");
 const app = express();
 const fs = require('fs');
-
+app.use(express.json())
+app.use(express.urlencoded({ extended: True}));
 //1
 app.get('/now', (req, res) => {
     const currentTime = new Date().toLocaleString();
@@ -24,7 +25,11 @@ app.get('/name', (req,res)=> {
     const randomName = names[randomIndex];
     res.send(`Random Name: ${randomName}`)
 })
-
+//4
+app.get('/html', (req, res)=> {
+    const file = 'C:\\Users\\leont\\ÜK_Backend_2024\\index.html'
+    res.sendFile(file)
+})
 //5
 app.get('/image', (req, res) => {
     const imagePath = "sinnerman.png"
@@ -37,11 +42,28 @@ app.get('/image', (req, res) => {
 app.get('/teapot', (req, res)=>{
     res.status(418).send('Tassenkopf')
 })
+//7
+app.get('/user-agent', (req, res) => {
+    const userAgent = req.headers['user-agent'];
+    res.send(`User-Agent: ${userAgent}`);
+});
 //8
 app.get('/secret', (req,res)=>{
     res.status(403).send()
 })
 
+//10
+app.get('/me', (req, res) => {
+    const personalInfo = {
+        "Vorname": "Max",
+        "Nachname": "Mustermann",
+        "Alter": 30,
+        "Wohnort": "Musterstadt",
+        "Augenfarbe": "Blau"
+    };
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(personalInfo));
+});
 
 // Start the server
 const port = 3000;
